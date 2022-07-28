@@ -46,9 +46,9 @@
                 mysqli_query($db, $user_check_query);
             }
         }
+
+        mysqli_close($db);
     }
-    
-    mysqli_close($db);
 ?>
 <?php include('./server.php') ?>
 
