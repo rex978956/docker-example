@@ -1,0 +1,96 @@
+h1, .h1 {
+    font-size: calc(1.5rem + 1.5vw);
+}
+
+hr {
+    margin: 1rem 0;
+    color: inherit;
+    background-color: currentColor;
+    border: 0;
+    opacity: 0.25;
+}
+
+section.inherited {
+    color: black;
+    background: url("../images/backgrounds/stars.png");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: scroll;
+    background-size: cover;
+}
+
+section.inherited div.container {
+    background: linear-gradient(rgba(243, 225, 210, 0.8) 0%, rgba(243, 225, 210, 0.8) 100%);
+    padding-top: 10rem;
+    padding-bottom: 10rem;
+}
+
+section.inherited h1, section.inherited .h1 {
+    font-size: 4rem;
+}
+
+section.inherited p, section.inherited .p {
+    font-size: 1.5rem;
+}
+
+section.ob {
+    padding-top: 10rem;
+    padding-bottom: 10rem;
+}
+
+section.ob h2, section.ob .h2 {
+    font-size: 3rem;
+}
+
+section.ob hr.divider {
+    height: 0.2rem;
+    max-width: 3.75rem;
+    margin: 1.5rem auto;
+    opacity: 1;
+}
+
+/* ob CONTENT
+-------------------------------------------------- */
+
+/* Center align the text within the three columns below the carousel */
+.ob .col-lg-4 {
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+.ob h2 {
+    font-weight: 400;
+}
+/* rtl:begin:ignore */
+.ob .col-lg-4 p {
+    margin-right: .75rem;
+    margin-left: .75rem;
+}
+
+/* Members
+------------------------- */
+
+.semester-divider {
+    margin: 5rem 0; /* Space out the Bootstrap <hr> more */
+}
+
+.semester-heading {
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: -.05rem;
+}
+
+/* RESPONSIVE CSS
+-------------------------------------------------- */
+
+@media (min-width: 40em) {
+    /* Bump up size of carousel content */  
+    .semester-heading {
+        font-size: 50px;
+    }
+}
+  
+@media (min-width: 62em) {
+    .semester-heading {
+        margin-top: 7rem;
+    }
+}

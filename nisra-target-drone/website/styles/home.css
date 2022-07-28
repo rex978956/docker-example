@@ -1,0 +1,101 @@
+section.masthead {
+    color: #FFFFFF;
+    background-image: url("../images/backgrounds/stars.png");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: scroll;
+    background-size: cover;
+    /* display size */
+    padding-top: 10rem;
+    padding-bottom: 10rem;
+}
+
+section.masthead h1, section.masthead .h1 {
+    font-size: 5rem;
+}
+
+section.masthead p, section.masthead .p {
+    font-size: 3rem;
+}
+
+section.masthead hr.divider {
+    height: 0.2rem;
+    max-width: 25%;
+    background-color: #FFFFFF;
+    opacity: 1;
+}
+
+section.about {
+    background-color: #E4F46C;
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+}
+
+section.about h2, section.about .h2 {
+    font-size: 4rem;
+}
+
+section.about p#en {
+    font-size: 2.5rem;
+}
+
+section.about p#en strong {
+    font-size: 2.75rem;
+}
+
+section.about p#chin {
+    font-size: 1.75rem;
+}
+
+section.about hr.divider {
+    height: 0.2rem;
+    max-width: 3.75rem;
+    margin: 1.5rem auto;
+    opacity: 1;
+}
+
+section.learning {
+    color: #FFFFFF;
+    background-color: #242528;
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+}
+
+section.learning div.page-container {
+    background-color: #2E2E2E;
+}
+
+section.learning h2, section.learning .h2 {
+    font-size: 5rem;
+}
+
+section.learning h3, section.learning .h3 {
+    font-size: 3rem;
+}
+
+section.learning p, section.learning .p {
+    font-size: 1.105rem;
+}
+
+section.join-us {
+    color: #FFFFFF;
+    background-color: #3C3E43;
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+}
+
+section.join-us h2, section.join-us .h2 {
+    font-size: 5rem;
+}
+
+section.join-us p, section.join-us .p {
+    font-size: 1.25rem;
+}
+
+section.join-us hr.divider {
+    height: 0.2rem;
+    max-width: 3.75rem;
+    background-color: #FFFFFF;
+    margin: 1.5rem auto;
+    opacity: 1;
+}
