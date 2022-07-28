@@ -2,11 +2,19 @@
 
 > 只是把 NISRA 靶機 source code 抄來放進 docker 裡面
 > 再加上兩個 fastapi server 與 express server
+> 畢竟是靶機不要公開到外部網路
 
 ### Install
 
 ```shell=
 cd docker && sudo docker-compose up --build -d
+```
+
+如果 upload 出現 permission denied
+可以修改一下資料夾權限
+
+```shell=
+chmod 777 nisra-target-drone/website/upload
 ```
 
 ### 網頁
