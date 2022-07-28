@@ -6,7 +6,7 @@
 ### Install
 
 ```shell=
-sudo docker-compose up --build -d
+cd docker && sudo docker-compose up --build -d
 ```
 
 ### 網頁
