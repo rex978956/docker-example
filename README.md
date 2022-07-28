@@ -1,8 +1,8 @@
 # Docker example
 
-> 只是把 NISRA 靶機 source code 抄來放進 docker 裡面
-> 再加上兩個 fastapi server 與 express server
-> 畢竟是靶機不要公開到外部網路
+-   只是把 NISRA 靶機 source code 抄來放進 docker 裡面
+-   再加上兩個服務 fastapi server 與 express server
+-   畢竟是靶機所以不要公開到外部網路
 
 ### Install
 
