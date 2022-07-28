@@ -1,99 +1,136 @@
+### 說明
+# 下面看到有長得像是 ${參數} 的東西皆是從 .env 這個檔案中取出來的資料
+# docker-compose 在執行的時候會自己把它引入進來
+# 可以執行 docker-compose config 看到引入後的結果
+
 version: '3.9'
 
+# 可以在 docker compose 中配置網路架構
 networks:
-    web:
-    services01:
-        driver: bridge
-        ipam:
-            driver: default
-            config:
-                - subnet: 10.87.0.0/16
-                  gateway: 10.87.0.1
-    services02:
-        driver: bridge
-        ipam:
-            driver: default
-            config:
-                - subnet: 10.88.0.0/16
-                  gateway: 10.88.0.1
+  web: # 如果沒設定資料，則建立時會用預設的方式配發
+  services01:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        # 可以指定想要的子網路
+        - subnet: 10.87.0.0/16
+          gateway: 10.87.0.1
+  services02:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.88.0.0/16
+          gateway: 10.88.0.1
 
 services:
-    phpapache:
-        # 當然也可以不用自己 build 可以用別人放到 docker hub 上的 image
-        build:
-            context: ./phpapache
-            args:
-                - MYSQL_USER=${MYSQL_USER}
-                - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-                - MYSQL_DATABASE=${MYSQL_DATABASE}
-        volumes:
-            - ${APP_CODE_PATH_HOST}:/var/www/html
-        ports:
-            - '${APACHE_HOST_HTTP_PORT}:80'
-        depends_on:
-            - '${PMA_DB_ENGINE}'
-        networks:
-            web:
-            services01:
-                ipv4_address: 10.87.0.87
-            services02:
-                ipv4_address: 10.88.0.87
-    mysql:
-        # 當然也可以不用自己 build 可以用別人放到 docker hub 上的 image
-        build:
-            context: ./mysql
-            args:
-                - MYSQL_VERSION=${MYSQL_VERSION}
-                - TZ=${WORKSPACE_TIMEZONE}
-        tty: true
-        restart: unless-stopped
-        ports:
-            - '${MYSQL_PORT}:3306'
-        volumes:
-            - ${DATA_PATH_HOST}/mysql:/var/lib/mysql
-            - ${MYSQL_ENTRYPOINT_INITDB}:/docker-entrypoint-initdb.d
-        environment:
-            - MYSQL_DATABASE=${MYSQL_DATABASE}
-            - MYSQL_USER=${MYSQL_USER}
-            - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-            - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-            - TZ=${WORKSPACE_TIMEZONE}
-            - MYSQL_TAGS=dev
-            - SERVICE_NAME=mysql
-        networks:
-            - web
-    phpmyadmin:
-        image: phpmyadmin/phpmyadmin # 可以用 docker hub 上的 image
-        depends_on:
-            - '${PMA_DB_ENGINE}'
-        ports:
-            - '${PMA_PORT}:80'
-        environment:
-            - PMA_HOST=${PMA_HOST}
-            - MYSQL_USER=${PMA_USER}
-            - MYSQL_PASSWORD=${PMA_PASSWORD}
-            - MYSQL_ROOT_PASSWORD=${PMA_ROOT_PASSWORD}
-            - MAX_EXECUTION_TIME=${PMA_MAX_EXECUTION_TIME}
-            - MEMORY_LIMIT=${PMA_MEMORY_LIMIT}
-            - UPLOAD_LIMIT=${PMA_UPLOAD_LIMIT}
-        networks:
-            - web
-    fastapi:
-        build:
-            context: ./fastapi
-        ports:
-            - '5000:80'
-        volumes:
-            - ./fastapi:/code
-        networks:
-            services01:
-                ipv4_address: 10.87.0.10
+  phpapache:
+    build:
+      # 表示該服務會用自己的 Dockerfile 建立 image
+      context: ./phpapache # 會使用該資料夾的 Dockerfile 建立 image
+      args:
+        # 可以傳遞參數到 Dockerfile 中使用
+        - MYSQL_USER=${MYSQL_USER}
+        - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+        - MYSQL_DATABASE=${MYSQL_DATABASE}
+    volumes:
+      # 可以指定要挂載的資料夾
+      - ${APP_CODE_PATH_HOST}:/var/www/html
+    ports:
+      # 如同 docker run -p <APACHE_HOST_HTTP_PORT>:80
+      - '${APACHE_HOST_HTTP_PORT}:80'
+    depends_on:
+      # 表示會先等待 mysql 容器啟動後才啟動自己
+      - mysql
+    networks:
+      # 這裡一共掛了三個網路
+      web: # 預計是要跟 mysql 與 phpmyadmin 處於同一個網段
+      services01:
+        # 因為這邊網路名稱是 services01，所以這個容器就會掛到 services01 的網路上
+        # 然後我們自己分配一個 IP 地址給它
+        # 預計是要跟 fastapi 處於同一個網段
+        ipv4_address: 10.87.0.87
+      services02:
+        # 同理如上
+        # 預計是要跟 express 處於同一個網段
+        ipv4_address: 10.88.0.87
+  mysql:
+    build:
+      # 表示該服務會用自己的 Dockerfile 建立 image
+      context: ./mysql # 會使用該資料夾的 Dockerfile 建立 image
+      args:
+        # 可以傳遞參數到 Dockerfile 中使用
+        - MYSQL_VERSION=${MYSQL_VERSION}
+        - TZ=${WORKSPACE_TIMEZONE}
+    tty: true # 可以在該容器中使用 tty 的模式執行命令
+    restart: unless-stopped # 表示該容器如果已經被停止，則不會重新啟動
+    ports:
+      # 定義要掛載的通訊埠
+      - '${MYSQL_PORT}:3306'
+    volumes:
+      # 定義要挂載的資料夾
+      - ${DATA_PATH_HOST}/mysql:/var/lib/mysql # 將資料夾挂載到容器中，等於備份資料庫出來，這樣容器關閉時，資料不會一起消失
+      - ${MYSQL_ENTRYPOINT_INITDB}:/docker-entrypoint-initdb.d # 當 mysql 被建立時，會先執行這個資料夾裡的腳本當作初始化資料庫的腳本
+    environment:
+      # 定義要傳遞的環境變數 (可能要看 image 的定義，官方的 mysql 的 image 可以傳遞這些變數進行設定)
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - TZ=${WORKSPACE_TIMEZONE}
+      - MYSQL_TAGS=dev
+      - SERVICE_NAME=mysql
+    networks:
+      - web
+  phpmyadmin:
+    # 當然可以不用 build，直接使用 image
+    # 如果本地端沒有 image，則會到 Docker Hub 下載
+    image: phpmyadmin/phpmyadmin
+    depends_on:
+      # 表示會先等待 mysql 容器啟動後才啟動自己
+      - mysql
+    ports:
+      # 定義要掛載的通訊埠
+      - '${PMA_PORT}:80'
+    environment:
+      # 定義要傳遞的環境變數
+      - PMA_HOST=${PMA_HOST}
+      - MYSQL_USER=${PMA_USER}
+      - MYSQL_PASSWORD=${PMA_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${PMA_ROOT_PASSWORD}
+      - MAX_EXECUTION_TIME=${PMA_MAX_EXECUTION_TIME}
+      - MEMORY_LIMIT=${PMA_MEMORY_LIMIT}
+      - UPLOAD_LIMIT=${PMA_UPLOAD_LIMIT}
+    networks:
+      - web
+  fastapi:
+    build:
+      # 表示該服務會用自己的 Dockerfile 建立 image
+      context: ./fastapi # 會使用該資料夾的 Dockerfile 建立 image
+    ports:
+      # 定義要掛載的通訊埠
+      - '5000:80'
+    volumes:
+      # 定義要挂載的資料夾
+      - ./fastapi:/code
+    networks:
+      services01:
+        # 因為這邊網路名稱是 services01，所以這個容器就會掛到 services01 的網路上
+        # 然後我們自己分配一個 IP 地址給它
+        # 預計是要跟 phpapache 處於同一個網段，與 express 處於不同的網段，所以它們之間不能相互連接
+        ipv4_address: 10.87.0.10
 
-    express:
-        build:
-            context: ./express
-        ports:
-            - '5001:3000'
-        networks:
-            services02:
-                ipv4_address: 10.88.0.10
+  express:
+    build:
+      # 表示該服務會用自己的 Dockerfile 建立 image
+      context: ./express # 會使用該資料夾的 Dockerfile 建立 image
+    ports:
+      # 定義要掛載的通訊埠
+      - '5001:3000'
+    networks:
+      services02:
+        # 因為這邊網路名稱是 services02，所以這個容器就會掛到 services02 的網路上
+        # 然後我們自己分配一個 IP 地址給它
+        # 預計是要跟 phpapache 處於同一個網段，與 fastapi 處於不同的網段，所以它們之間不能相互連接
+        ipv4_address: 10.88.0.10

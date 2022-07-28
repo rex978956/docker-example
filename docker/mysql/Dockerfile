@@ -1,9 +1,13 @@
-ARG MYSQL_VERSION
+# 宣告說會有 MYSQL_VERSION 這個參數傳進來
+ARG MYSQL_VERSION 
+
+# 使用 MYSQL_VERSION 參數來定義 MYSQL 的版本
 FROM mysql:${MYSQL_VERSION}
 #####################################
 # Set Timezone
 #####################################
 
+# 宣告說會有 TZ 這個參數傳進來，預設值為`UTC`
 ARG TZ=UTC
 ENV TZ ${TZ}
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && chown -R mysql:root /var/lib/mysql/
