@@ -1,99 +1,100 @@
-version: "3.9"
+version: '3.9'
 
 networks:
-  web:
-  services01:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-      - subnet: 10.87.0.0/16
-        gateway: 10.87.0.1
-  services02:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-      - subnet: 10.88.0.0/16
-        gateway: 10.88.0.1
+    web:
+    services01:
+        driver: bridge
+        ipam:
+            driver: default
+            config:
+                - subnet: 10.87.0.0/16
+                  gateway: 10.87.0.1
+    services02:
+        driver: bridge
+        ipam:
+            driver: default
+            config:
+                - subnet: 10.88.0.0/16
+                  gateway: 10.88.0.1
 
 services:
-  phpapache:
-    # 當然也可以不用自己 build 可以用別人放到 docker hub 上的 image
-    build: 
-      context: ./phpapache
-      args:
-        - MYSQL_USER=${MYSQL_USER}
-        - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-        - MYSQL_DATABASE=${MYSQL_DATABASE}
-    volumes:
-    - ${APP_CODE_PATH_HOST}:/var/www/html
-    ports:
-      - "${APACHE_HOST_HTTP_PORT}:80"
-    depends_on:
-      - "${PMA_DB_ENGINE}"
-    networks:
-      web:
-      services01:
-        ipv4_address: 10.87.0.87
-      services02:
-        ipv4_address: 10.88.0.87
-  mysql:
-    # 當然也可以不用自己 build 可以用別人放到 docker hub 上的 image
-    build: 
-      context: ./mysql
-      args:
-        - MYSQL_VERSION=${MYSQL_VERSION}
-        - TZ=${WORKSPACE_TIMEZONE}
-    tty: true
-    restart: unless-stopped
-    ports:
-      - "${MYSQL_PORT}:3306"
-    volumes:
-      - ${DATA_PATH_HOST}/mysql:/var/lib/mysql
-      - ${MYSQL_ENTRYPOINT_INITDB}:/docker-entrypoint-initdb.d
-    environment:
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - TZ=${WORKSPACE_TIMEZONE}
-      - MYSQL_TAGS=dev
-      - SERVICE_NAME=mysql
-    networks:
-      - web
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin # 可以用 docker hub 上的 image
-    depends_on:
-      - "${PMA_DB_ENGINE}"
-    ports:
-      - "${PMA_PORT}:80"
-    environment:
-      - PMA_HOST=${PMA_HOST}
-      - MYSQL_USER=${PMA_USER}
-      - MYSQL_PASSWORD=${PMA_PASSWORD}
-      - MYSQL_ROOT_PASSWORD=${PMA_ROOT_PASSWORD}
-      - MAX_EXECUTION_TIME=${PMA_MAX_EXECUTION_TIME}
-      - MEMORY_LIMIT=${PMA_MEMORY_LIMIT}
-      - UPLOAD_LIMIT=${PMA_UPLOAD_LIMIT}
-    networks:
-      - web
-  fastapi:
-    build: 
-      context: ./fastapi
-    ports:
-      - "5000:80"
-    volumes:
-      - ./fastapi:/code
-    networks:
-      services01:
-        ipv4_address: 10.87.0.10
+    phpapache:
+        # 當然也可以不用自己 build 可以用別人放到 docker hub 上的 image
+        build:
+            context: ./phpapache
+            args:
+                - MYSQL_USER=${MYSQL_USER}
+                - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+                - MYSQL_DATABASE=${MYSQL_DATABASE}
+        volumes:
+            - ${APP_CODE_PATH_HOST}:/var/www/html
+            - ${DATA_PATH_HOST}/website/upload:/var/www/html/upload:rw
+        ports:
+            - '${APACHE_HOST_HTTP_PORT}:80'
+        depends_on:
+            - '${PMA_DB_ENGINE}'
+        networks:
+            web:
+            services01:
+                ipv4_address: 10.87.0.87
+            services02:
+                ipv4_address: 10.88.0.87
+    mysql:
+        # 當然也可以不用自己 build 可以用別人放到 docker hub 上的 image
+        build:
+            context: ./mysql
+            args:
+                - MYSQL_VERSION=${MYSQL_VERSION}
+                - TZ=${WORKSPACE_TIMEZONE}
+        tty: true
+        restart: unless-stopped
+        ports:
+            - '${MYSQL_PORT}:3306'
+        volumes:
+            - ${DATA_PATH_HOST}/mysql:/var/lib/mysql
+            - ${MYSQL_ENTRYPOINT_INITDB}:/docker-entrypoint-initdb.d
+        environment:
+            - MYSQL_DATABASE=${MYSQL_DATABASE}
+            - MYSQL_USER=${MYSQL_USER}
+            - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+            - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+            - TZ=${WORKSPACE_TIMEZONE}
+            - MYSQL_TAGS=dev
+            - SERVICE_NAME=mysql
+        networks:
+            - web
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin # 可以用 docker hub 上的 image
+        depends_on:
+            - '${PMA_DB_ENGINE}'
+        ports:
+            - '${PMA_PORT}:80'
+        environment:
+            - PMA_HOST=${PMA_HOST}
+            - MYSQL_USER=${PMA_USER}
+            - MYSQL_PASSWORD=${PMA_PASSWORD}
+            - MYSQL_ROOT_PASSWORD=${PMA_ROOT_PASSWORD}
+            - MAX_EXECUTION_TIME=${PMA_MAX_EXECUTION_TIME}
+            - MEMORY_LIMIT=${PMA_MEMORY_LIMIT}
+            - UPLOAD_LIMIT=${PMA_UPLOAD_LIMIT}
+        networks:
+            - web
+    fastapi:
+        build:
+            context: ./fastapi
+        ports:
+            - '5000:80'
+        volumes:
+            - ./fastapi:/code
+        networks:
+            services01:
+                ipv4_address: 10.87.0.10
 
-  express:
-    build: 
-      context: ./express
-    ports:
-      - "5001:3000"
-    networks:
-      services02:
-        ipv4_address: 10.88.0.10
+    express:
+        build:
+            context: ./express
+        ports:
+            - '5001:3000'
+        networks:
+            services02:
+                ipv4_address: 10.88.0.10
